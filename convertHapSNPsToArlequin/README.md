@@ -1,5 +1,5 @@
 convertHapSNPsToArlequin
-------------------------
+========================
 
 An R function to convert a file containing population-specific haplotype SNPs
 in a simple format to an Arlequin project file.  A number of options are
@@ -28,12 +28,16 @@ A very simple data file defining haplotypes for 13 individuals belonging to 3 po
 Contents in Arlequin project file format, which should be identical to the
 output that should be produced by entering, within R:
 
-    convertHapSNPsToArlequin(infile="example_data.txt")
+```R
+convertHapSNPsToArlequin(infile="example_data.txt")
+```
 
 As entered, the above will produce output to the file `example_data.txt.arp`.  Appending
 `.arp` to the input filename is the default when no `outfile=` argument is provided.
 To produce output directly within R without writing to a separate output
 file, specify an empty output file name:
 
-    convertHapSNPsToArlequin(infile="example_data.txt", outfile="")
+```R
+convertHapSNPsToArlequin(infile="example_data.txt", outfile="")
+```
 

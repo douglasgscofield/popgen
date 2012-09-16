@@ -1,5 +1,5 @@
 checkNullAlleles
-----------------
+================
 
 Compare genotypes against a set of reference genotypes and look for genotypes
 that differ in a way consistent with the occurrence of a null allele, that is,
@@ -21,19 +21,24 @@ and can be found at <https://github.com/douglasgscofield/popgen>.
 Expected output is the following, with the loci having potental null alleles
 surrounded by asterisks.
 
-    > source("readGenalex.2.R") 
-    > source("checkNullAlleles-0.2.R")
-    > checkNullAlleles("reference_genotypes.txt", "compare_genotypes.txt")
+```R
+source("readGenalex.2.R") 
+source("checkNullAlleles-0.2.R")
+checkNullAlleles("reference_genotypes.txt", "compare_genotypes.txt")
+```
 
-    checkNullAlleles 0.2: 6 reference genotypes
-    checkNullAlleles 0.2: 16 comparison genotypes
+produces
 
-    comp8	1 compare	1/1	2/1	2/5	*3/3*	3/1 
-    ref6	1 ref	        1/1	2/1	2/5	*2/3*	3/1 
+~~~~
+checkNullAlleles 0.2: 6 reference genotypes
+checkNullAlleles 0.2: 16 comparison genotypes
 
-    comp10	1 compare	2/3	1/1	*4/4*	3/3	6/1 
-    ref2	1 ref	        2/3	1/1	*2/4*	3/3	6/1 
+comp8	1 compare	1/1	2/1	2/5	*3/3*	3/1 
+ref6	1 ref	        1/1	2/1	2/5	*2/3*	3/1 
 
-    comp12	1 compare	3/3	2/1	2/2	3/1	*3/3* 
-    ref4	1 ref	        3/3	2/1	2/2	3/1	*2/3* 
+comp10	1 compare	2/3	1/1	*4/4*	3/3	6/1 
+ref2	1 ref	        2/3	1/1	*2/4*	3/3	6/1 
 
+comp12	1 compare	3/3	2/1	2/2	3/1	*3/3* 
+ref4	1 ref	        3/3	2/1	2/2	3/1	*2/3* 
+~~~~
