@@ -60,3 +60,9 @@ documentation are available at <http://www.anu.edu.au/BoZo/GenAlEx/>.
     [1] 6
      
     ...
+
+It only reads the number of samples specified by the GenAlEX header, and only treats as genotypes the number of genotype columns implied by the GenAlEx header in concert with the stated ploidy level.
+
+It also tries to ignore extra TAB characters that tools such as Excel can insert when exporting TAB-delimited text, otherwise these could imply both additional columns and additional rows.  Hopefully the latter is avoided by only reading the number of samples specified by the header.
+
+If there are additional **named** columns to the right of the genotypes, these are read and stored in a dataframe attached to the attribute `extra.columns`.  The first column of the `extra.columns` dataframe is the sample name (leftmost column from the genotypes, e.g., the `id` column from the above example).  It attempts to ignore additional unnamed columns scattered amongst the named extra columns.
