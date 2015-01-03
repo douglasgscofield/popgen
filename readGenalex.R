@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2013, Douglas G. Scofield douglasgscofield@gmail.com
+# Copyright (c) 2008-2014, Douglas G. Scofield douglasgscofield@gmail.com
 #
 # Read genotype data file in GenAlEx format. GenAlEx and its documentation are
 # available from http://www.anu.edu.au/BoZo/GenAlEx/
@@ -18,6 +18,10 @@
 #
 # CHANGELOG
 #
+# v 0.4
+# -----
+# * Downconvert ploidy (2n to 1n) by sampling first allele of each locus.
+#
 # v 0.3
 # -----
 # * Improve error messages when mismatch between group names in the header
@@ -25,7 +29,7 @@
 # * Handle the presence of extra columns to the right of the genotype
 #   columns; load these into a separate data.frame attribute "extra.columns"
 
-.readGenalexVersion <- "0.3"
+.readGenalexVersion <- "0.4"
 
 readGenalex <- function(file, sep="\t", ploidy=2)
 {
@@ -43,9 +47,38 @@ readGenalex <- function(file, sep="\t", ploidy=2)
     dat
 }
 
+is.genalex <- function(checkdata)
+{
+    if (attr(checkdata,"genetic.data.format") != "genalex")
+        stop("data not genalex format")
+    TRUE
+}
+
+reduceGenalexPloidy <- function(dat, new.ploidy=1)
+{
+    # Would be nice to be more general, e.g., pick other than the first
+    # column, or a random allele
+    att <- attributes(dat)
+    if (new.ploidy == att$ploidy) 
+        return(dat)
+    else if (new.ploidy > att$ploidy) 
+        stop("new.ploidy",new.ploidy,"greater than existing ploidy",att$ploidy)
+    else if (new.ploidy != 1 || att$ploidy != 2) 
+        stop("can't currently handle new.ploidy other than 1, existing ploidy other than 2")
+    new.col = c(1:(att$locus.columns[1]-1), att$locus.columns)
+    dat = dat[, new.col]
+    for (a in names(att))
+        if (! a %in% c("names","locus.columns","data.column.names","ploidy"))
+            attr(dat,a) <- att[[a]]
+    attr(dat, "locus.columns") = att$locus.columns - (0:(att$n.loci - 1) * (att$ploidy - new.ploidy))
+    attr(dat, "data.column.names") = att$data.column.names[new.col]
+    attr(dat, "ploidy") = new.ploidy
+    dat
+}
+
 dropGenalexLoci <- function(dat, drop.loci, quiet=FALSE)
 {
-    if (is.null(drop.loci)) return(dat)
+    if (missing(drop.loci) || is.null(drop.loci)) return(dat)
     locus.names <- attr(dat, "locus.names")
     if (! all(drop.loci %in% locus.names))  
         if (any(drop.loci %in% locus.names)) # at least one matches
@@ -218,12 +251,5 @@ getGenalexLocus <- function(dat, locus, pop=NULL)
     dat <- as.data.frame(dat, stringsAsFactors=FALSE)
     ####
     list(dat=dat, extra.columns=extra.dat)
-}
-
-is.genalex <- function(checkdata)
-{
-    if (attr(checkdata,"genetic.data.format") != "genalex")
-        stop("data not genalex format")
-    TRUE
 }
 
