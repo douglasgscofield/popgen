@@ -167,11 +167,6 @@ getGenalexLocus <- function(dat, locus, pop=NULL)
     extra.columns = cbind(dat[,1], raw.data$extra.columns)  # add sample name to extra columns
     names(extra.columns)[1] = names(dat)[1]
     names(dat) <- header$data.column.names
-    # names(dat) <- c(header$sample.title, header$pop.title,
-    #                  unlist(lapply(header$locus.names, 
-    #                                function(x) c(x, 
-    #                                              paste(sep=".", x, 
-    #                                                    seq(2, header$ploidy, 1))))))
     dat[[header$pop.title]] <- factor(dat[[header$pop.title]])
     # TODO: handle label in header with size 0 and missing from data?
     pop.labels.header = sort(header$pop.labels)
