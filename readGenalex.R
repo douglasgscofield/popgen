@@ -18,9 +18,15 @@
 #
 # CHANGELOG
 #
+# v 0.4.1
+# -------
+# * Improve error messages for sample size mismatch and handle lack of extra
+#   columns more gracefully
+#
 # v 0.4
 # -----
-# * Downconvert ploidy (2n to 1n) by sampling first allele of each locus.
+# * Downconvert ploidy (2n to 1n) by sampling first allele of each locus with
+#   reduceGenalexPloidy()
 #
 # v 0.3
 # -----
@@ -164,8 +170,10 @@ getGenalexLocus <- function(dat, locus, pop=NULL)
 .readGenalexJoinData <- function(header, raw.data)
 {
     dat = raw.data$dat
-    extra.columns = cbind(dat[,1], raw.data$extra.columns)  # add sample name to extra columns
-    names(extra.columns)[1] = names(dat)[1]
+    if (! is.null(raw.data$extra.columns)) {
+        extra.columns = cbind(dat[,1], raw.data$extra.columns)  # add sample name to extra columns
+        names(extra.columns)[1] = names(dat)[1]
+    }
     names(dat) <- header$data.column.names
     dat[[header$pop.title]] <- factor(dat[[header$pop.title]])
     # TODO: handle label in header with size 0 and missing from data?
@@ -182,12 +190,16 @@ getGenalexLocus <- function(dat, locus, pop=NULL)
     }
     # TODO: handle label in header with size 0 and missing from data?
     pops.in.order <- names(header$pop.sizes)
-    if (any(table(dat[[header$pop.title]])[pops.in.order] != header$pop.sizes)) {
-        err <- paste(collapse=",",header$pop.labels[table(dat[[header$pop.title]]) != header$pop.sizes])
-        stop("sizes of populations ",err," do not match in header and data")
+    pop.sizes.in.data = table(dat[[header$pop.title]])[pops.in.order]
+    mism = pop.sizes.in.data != header$pop.sizes
+    if (any(mism)) {
+        err1 <- paste(collapse=",",header$pop.labels[mism])
+        err2 <- paste(paste(sep=" != ",collapse=", ",pop.sizes.in.data[mism], header$pop.sizes[mism]))
+        stop("sizes of populations ",err1," do not match in header and data: ",err2)
     }
     for (nm in names(header)) attr(dat, nm) <- header[[nm]]
-    attr(dat, "extra.columns") = extra.columns
+    if (! is.null(raw.data$extra.columns))
+        attr(dat, "extra.columns") = extra.columns
     dat
 }
 
@@ -229,20 +241,25 @@ getGenalexLocus <- function(dat, locus, pop=NULL)
 .readGenalexData <- function(con, sep, col.names, n.samples, n.loci, ploidy, extra.columns=character(0))
 {
     classes <- c("character","character",rep("character",n.loci*ploidy))
+    scan.col.names = col.names
     extra.columns <- extra.columns[extra.columns != ""]
     if (length(extra.columns)) {
         classes <- c(classes, rep("character", length(extra.columns)))
+        scan.col.names = c(col.names, extra.columns)
     }
     # switch to scan() so that we can handle data lines that contain more trailing column 
     # separators than data dolumns, due to what Excel does when exporting tab-delimited files
     # dat <- read.table(file=con, sep=sep, header=FALSE, nrows=n.samples, 
     #                   col.names=col.names, colClasses=classes, flush=TRUE)
     what <- sapply(classes, do.call, list(0))
-    names(what) <- c(col.names, extra.columns)
+    names(what) = scan.col.names
     dat <- scan(file=con, what=what, nmax=n.samples, flush=TRUE, quiet=TRUE)
-    extra.dat = dat[names(what) %in% extra.columns]
-    dat = dat[! names(what) %in% extra.columns]
-    extra.dat <- as.data.frame(extra.dat, stringsAsFactors=FALSE)
+    extra.dat = NULL
+    if (length(extra.columns)) {
+      extra.dat = dat[names(what) %in% extra.columns]
+      dat = dat[! names(what) %in% extra.columns]
+      extra.dat <- as.data.frame(extra.dat, stringsAsFactors=FALSE)
+    }
     dat <- as.data.frame(dat, stringsAsFactors=FALSE)
     ####
     list(dat=dat, extra.columns=extra.dat)
