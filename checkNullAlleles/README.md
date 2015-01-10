@@ -16,14 +16,14 @@ messages in addition to the null allele reports.
 The reference and compare genotypes are in GenAlEx format, and are either read
 in within `checkNullAlleles()` or are presented as dataframes read by
 `readGenalex()`.  `readGenalex()` and its associated functions must be available,
-and can be found at <https://github.com/douglasgscofield/popgen>.
+and can be found at <https://github.com/douglasgscofield/readGenalex>.
 
 Expected output is the following, with the loci having potental null alleles
 surrounded by asterisks.
 
 ```R
-source("readGenalex.2.R") 
-source("checkNullAlleles-0.2.R")
+source("readGenalex.R") 
+source("checkNullAlleles.2.R")
 checkNullAlleles("reference_genotypes.txt", "compare_genotypes.txt")
 ```
 
